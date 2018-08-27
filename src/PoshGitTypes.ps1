@@ -222,6 +222,7 @@ class PoshGitTextSpan {
 
 class PoshGitPromptSettings {
     [bool]$AnsiConsole = $Host.UI.SupportsVirtualTerminal -or ($Env:ConEmuANSI -eq "ON")
+    [bool]$SetEnvColumns = $true
 
     [PoshGitCellColor]$DefaultColor = [PoshGitCellColor]::new()
     [PoshGitCellColor]$BranchColor  = [PoshGitCellColor]::new([ConsoleColor]::Cyan)
@@ -273,7 +274,7 @@ class PoshGitPromptSettings {
     [string]$DescribeStyle = ''
     [psobject]$WindowTitle = {param($GitStatus, [bool]$IsAdmin) "$(if ($IsAdmin) {'Admin: '})$(if ($GitStatus) {"$($GitStatus.RepoName) [$($GitStatus.Branch)]"} else {Get-PromptPath}) ~ PowerShell $($PSVersionTable.PSVersion) $([IntPtr]::Size * 8)-bit ($PID)"}
 
-    [PoshGitTextSpan]$DefaultPromptPrefix       = ''
+    [PoshGitTextSpan]$DefaultPromptPrefix       = '$(Get-PromptConnectionInfo -Format "[{1}@{0}]: ")'
     [PoshGitTextSpan]$DefaultPromptPath         = '$(Get-PromptPath)'
     [PoshGitTextSpan]$DefaultPromptBeforeSuffix = ''
     [PoshGitTextSpan]$DefaultPromptDebug        = [PoshGitTextSpan]::new(' [DBG]:', [ConsoleColor]::Magenta)

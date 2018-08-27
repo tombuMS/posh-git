@@ -99,22 +99,41 @@ New-Alias pscore C:\Users\Keith\GitHub\rkeithhill\PowerShell\src\powershell-win-
             $nativeContent += "${newLine}${newLine}Import-Module posh-git"
             $content -join $newLine | Should BeExactly $nativeContent
         }
-        It 'Adds Start-SshAgent if posh-git is not installed' {
-            Add-PoshGitToProfile $profilePath -StartSshAgent
+    }
 
-            Test-Path -LiteralPath $profilePath | Should Be $true
-            $last = Get-Content $profilePath | Select-Object -Last 1
-            $last | Should BeExactly "Start-SshAgent -Quiet"
+    Context 'Get-PromptConnectionInfo' {
+        BeforeEach {
+            if (Test-Path Env:SSH_CONNECTION) {
+                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssigments', '')]
+                $ssh_connection = $Env:SSH_CONNECTION
+
+                Remove-Item Env:SSH_CONNECTION
+            }
         }
-        It 'Does not add Start-SshAgent if posh-git is installed' {
-            $profileContent = 'Import-Module posh-git'
-            Set-Content $profilePath -Value $profileContent
+        AfterEach {
+            if ($ssh_connection) {
+                Set-Item Env:SSH_CONNECTION $ssh_connection
+            } elseif (Test-Path Env:SSH_CONNECTION) {
+                Remove-Item Env:SSH_CONNECTION
+            }
+        }
+        It 'Returns null if Env:SSH_CONNECTION is not set' {
+            Get-PromptConnectionInfo | Should BeExactly $null
+        }
+        It 'Returns null if Env:SSH_CONNECTION is empty' {
+            Set-Item Env:SSH_CONNECTION ''
 
-            Add-PoshGitToProfile $profilePath -StartSshAgent
+            Get-PromptConnectionInfo | Should BeExactly $null
+        }
+        It 'Returns "[username@hostname]: " if Env:SSH_CONNECTION is set' {
+            Set-Item Env:SSH_CONNECTION 'test'
 
-            Test-Path -LiteralPath $profilePath | Should Be $true
-            $content = Get-Content $profilePath
-            $content | Should BeExactly $profileContent
+            Get-PromptConnectionInfo | Should BeExactly "[$([System.Environment]::UserName)@$([System.Environment]::MachineName)]: "
+        }
+        It 'Returns formatted string if Env:SSH_CONNECTION is set with -Format' {
+            Set-Item Env:SSH_CONNECTION 'test'
+
+            Get-PromptConnectionInfo -Format "[{0}]({1}) " | Should BeExactly "[$([System.Environment]::MachineName)]($([System.Environment]::UserName)) "
         }
     }
 

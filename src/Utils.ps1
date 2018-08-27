@@ -11,7 +11,7 @@ $invokeErrors = New-Object System.Collections.ArrayList 256
 
 function Invoke-NullCoalescing {
     $result = $null
-    foreach($arg in $args) {
+    foreach ($arg in $args) {
         if ($arg -is [ScriptBlock]) {
             $result = & $arg
         }
@@ -86,8 +86,6 @@ function Test-Administrator {
 .PARAMETER Force
     Do not check if the specified profile script is already importing
     posh-git. Just add Import-Module posh-git command.
-.PARAMETER StartSshAgent
-    Also add `Start-SshAgent -Quiet` to the specified profile script.
 .EXAMPLE
     PS C:\> Add-PoshGitToProfile
     Updates your profile script for the current PowerShell host to import the
@@ -115,10 +113,6 @@ function Add-PoshGitToProfile {
         [Parameter()]
         [switch]
         $Force,
-
-        [Parameter()]
-        [switch]
-        $StartSshAgent,
 
         [Parameter(ValueFromRemainingArguments)]
         [psobject[]]
@@ -223,9 +217,6 @@ function Add-PoshGitToProfile {
     if ($PSCmdlet.ShouldProcess($profilePath, "Add 'Import-Module posh-git' to profile")) {
         Add-Content -LiteralPath $profilePath -Value $profileContent -Encoding UTF8
     }
-    if ($StartSshAgent -and $PSCmdlet.ShouldProcess($profilePath, "Add 'Start-SshAgent -Quiet' to profile")) {
-        Add-Content -LiteralPath $profilePath -Value 'Start-SshAgent -Quiet' -Encoding UTF8
-    }
 }
 
 <#
@@ -308,6 +299,25 @@ function Get-PromptPath {
     }
 
     return $currentPath
+}
+
+<#
+.SYNOPSIS
+    Gets a string with current machine name and user name when connected with SSH
+.PARAMETER Format
+    Format string to use for displaying machine name ({0}) and user name ({1}).
+    Default: "[{1}@{0}]: ", i.e. "[user@machine]: "
+.INPUTS
+    None
+.OUTPUTS
+    [String]
+#>
+function Get-PromptConnectionInfo($Format = '[{1}@{0}]: ') {
+    if ($GitPromptSettings -and (Test-Path Env:SSH_CONNECTION)) {
+        $MachineName = [System.Environment]::MachineName
+        $UserName = [System.Environment]::UserName
+        $Format -f $MachineName,$UserName
+    }
 }
 
 function Get-PSModulePath {

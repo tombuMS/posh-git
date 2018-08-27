@@ -29,6 +29,7 @@ FunctionsToExport = @(
     'Get-GitBranchStatusColor',
     'Get-GitStatus',
     'Get-GitDirectory',
+    'Get-PromptConnectionInfo',
     'Get-PromptPath',
     'Update-AllBranches',
     'Write-GitStatus',
@@ -40,11 +41,6 @@ FunctionsToExport = @(
     'Write-GitWorkingDirStatusSummary',
     'Write-Prompt',
     'Write-VcsStatus',
-    'Get-SshAgent',
-    'Start-SshAgent',
-    'Stop-SshAgent',
-    'Add-SshKey',
-    'Get-SshPath',
     'TabExpansion',
     'tgit'
 )
